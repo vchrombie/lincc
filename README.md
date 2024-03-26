@@ -1,0 +1,2 @@
+# LiCC
+Enhancing License Compliance
