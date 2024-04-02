@@ -1,0 +1,33 @@
+{
+  "ignorePatterns": [
+    "tests/*",
+    "test*",
+    ".git/*",
+    ".github/*",
+    "requirements/*",
+    "requirements*.txt",
+    ".readthedocs.yaml",
+    "docs/*.txt",
+    "docs/*.rst",
+    "docs/*.md",
+    ".gitattributes",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    "README.md",
+    "NEWS",
+    "LICENSE*",
+    "verify_release",
+    "MAINTAINERS",
+    "CONTRIBUTING.md",
+    "CODEOWNERS",
+    "releases/*",
+    ".mailmap",
+    "SECURITY.md",
+    "AUTHORS",
+    "CHANGELOG.md",
+    "HISTORY.md",
+    ".vscode/*",
+    ".flake8",
+    "lib/*"
+  ]
+}

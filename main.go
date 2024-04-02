@@ -27,6 +27,65 @@ type Category struct {
 	Licenses   []string `json:"licenses"`
 }
 
+type Config struct {
+	IgnorePatterns []string `json:"ignorePatterns"`
+}
+
+func loadConfig() (Config, error) {
+	var config Config
+	data, err := ioutil.ReadFile(".lincc")
+	if err != nil {
+		return config, err
+	}
+	err = json.Unmarshal(data, &config)
+	return config, err
+}
+
+func shouldIgnore(filePath string, config Config) bool {
+	for _, pattern := range config.IgnorePatterns {
+		// Normalize leading './' for consistent matching
+		cleanPath := strings.TrimPrefix(filePath, "./")
+		// Match using filepath.Match which supports glob patterns
+		matched, err := filepath.Match(pattern, cleanPath)
+		if err != nil {
+			// Handle syntax error in pattern
+			log.Printf("Invalid pattern syntax %s: %v", pattern, err)
+			continue
+		}
+		if matched {
+			return true
+		}
+		// Attempt to match pattern within any subdirectory if it's not explicitly rooted
+		if !strings.HasPrefix(pattern, "/") {
+			matched, err = filepath.Match("*/"+pattern, cleanPath)
+			if err == nil && matched {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func splitPattern(pattern string) (dirPattern, filePattern string) {
+	lastSlash := strings.LastIndex(pattern, "/")
+	dirPattern = pattern[:lastSlash]
+	filePattern = pattern[lastSlash+1:]
+	return
+}
+
+func matchDirAndFilePattern(path, dirPattern, filePattern string) bool {
+	dir, file := filepath.Split(path)
+	// Check if directory matches the dirPattern
+	matchedDir, _ := filepath.Match(dirPattern+"/*", dir)
+	if matchedDir {
+		// Check if file matches the filePattern
+		matchedFile, _ := filepath.Match(filePattern, file)
+		if matchedFile {
+			return true
+		}
+	}
+	return false
+}
 func cloneRepo(repoURL, dir string) error {
 	cmd := exec.Command("git", "clone", "--depth", "1", repoURL, dir)
 	return cmd.Run()
@@ -88,21 +147,18 @@ func isLicenseApplicable(extension string, rootLicenses []string, mapping FileLi
 	return false
 }
 
-func checkFiles(dir string, rootLicenses []string, mapping FileLicenseMapping) map[string]bool {
+func checkFiles(dir string, rootLicenses []string, mapping FileLicenseMapping, config Config) map[string]bool {
 	fileChecks := make(map[string]bool)
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		// skip hidden directories: .git, .github, etc.
-		if path != dir && info.IsDir() && strings.HasPrefix(info.Name(), ".") {
-			return filepath.SkipDir
-		}
-		// skip files in the root directory: LICENSE, README.md, etc.
-		if path == dir || !info.IsDir() && filepath.Dir(path) == dir {
+		// New logic to check if the path matches any ignore pattern
+		if shouldIgnore(path, config) {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
 			return nil
 		}
+
 		if !info.IsDir() {
 			// check if its license is applicable
 			relativePath, err := filepath.Rel(dir, path)
@@ -135,6 +191,11 @@ func main() {
 		log.Fatalf("Failed to load mapping: %v", err)
 	}
 
+	config, err := loadConfig()
+	if err != nil {
+		log.Fatalf("Failed to load .lincc config: %v", err)
+	}
+
 	dir := filepath.Join(".", strings.Split(filepath.Base(repoURL), ".")[0])
 	if err := cloneRepo(repoURL, dir); err != nil {
 		log.Fatalf("Failed to clone repository: %v", err)
@@ -151,7 +212,7 @@ func main() {
 		fmt.Printf("License: %s\n", license)
 	}
 
-	fileChecks := checkFiles(dir, rootLicenses, mapping)
+	fileChecks := checkFiles(dir, rootLicenses, mapping, config)
 
 	var files []string
 	for file := range fileChecks {

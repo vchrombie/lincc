@@ -1,4 +1,4 @@
-module cmd/licc
+module cmd/lincc
 
 go 1.20
 
