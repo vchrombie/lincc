@@ -1,22 +1,22 @@
-# licc
+# lincc
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/vchrombie/licc)](https://goreportcard.com/report/github.com/vchrombie/licc)
-[![GoDoc](https://godoc.org/github.com/vchrombie/licc?status.svg)](https://godoc.org/github.com/vchrombie/licc)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vchrombie/lincc)](https://goreportcard.com/report/github.com/vchrombie/lincc)
+[![GoDoc](https://godoc.org/github.com/vchrombie/lincc?status.svg)](https://godoc.org/github.com/vchrombie/lincc)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-licc is a tool designed to automate the verification and correction of software
+lincc is a tool designed to automate the verification and correction of software
 license configurations across projects.
 
 ## Installation
 
 ```bash
-go get -u github.com/vchrombie/licc
+go get -u github.com/vchrombie/lincc
 ```
 
 ## Usage
 
 ```bash
-go run main.go https://github.com/vchrombie/licc
+go run main.go https://github.com/vchrombie/lincc
 ```
 
 ## Roadmap
