@@ -7,6 +7,9 @@
 lincc is a tool designed to automate the verification and correction of software
 license configurations across projects.
 
+It checks if the licenses applied to project components, such as documentation and
+code, are properly aligned with the chosen project license.
+
 ## Installation
 
 ```bash
